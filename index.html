@@ -1,1 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trio Quotidien - Classements Bridge</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1a3a2a;--green-mid:#2d5a3d;--green-light:#3d7a52;--gold:#c9a84c;--gold-light:#e8c97a;--cream:#f5f0e8;--cream-dark:#e8e0d0;--red:#8b2020;--text:#1a1a1a;--muted:#6b6b6b;--card-bg:rgba(255,255,255,0.92);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--green);min-height:100vh;color:var(--text);background-image:radial-gradient(ellipse at 20% 20%,rgba(61,122,82,0.4) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(29,58,42,0.8) 0%,transparent 50%);}
+header{background:linear-gradient(135deg,#0d2018 0%,#1a3a2a 50%,#0d2018 100%);border-bottom:2px solid var(--gold);padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.logo{display:flex;align-items:center;gap:16px;}
+.suits{font-size:28px;letter-spacing:4px;filter:drop-shadow(0 0 8px rgba(201,168,76,0.6));}
+.title-block h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--gold-light);letter-spacing:1px;}
+.title-block p{color:rgba(255,255,255,0.5);font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.stats-bar{display:flex;gap:24px;flex-wrap:wrap;}
+.stat-chip{background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:8px 16px;text-align:center;}
+.stat-chip .val{font-family:'DM Mono',monospace;font-size:1.3rem;color:var(--gold-light);font-weight:500;display:block;}
+.stat-chip .lbl{font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.45);}
+.main{max-width:1200px;margin:0 auto;padding:32px 20px;}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,0.3);border-radius:12px;padding:4px;margin-bottom:28px;width:fit-content;}
+.tab{padding:10px 22px;border-radius:9px;border:none;background:transparent;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.tab.active{background:var(--gold);color:#0d2018;font-weight:600;}
+.tab:hover:not(.active){color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.08);}
+.panel{display:none;}.panel.active{display:block;}
+.import-section{background:var(--card-bg);border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 4px 24px rgba(0,0,0,0.2);}
+.import-section h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--green);margin-bottom:18px;}
+.btn{padding:10px 22px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.18s;}
+.btn-primary{background:var(--green-mid);color:white;}
+.btn-danger{background:#fef2f2;color:var(--red);border:1.5px solid #fca5a5;}
+.btn-gold{background:var(--gold);color:#0d2018;}
+.file-drop{border:2px dashed var(--cream-dark);border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:#fafaf8;position:relative;}
+.file-drop:hover{border-color:var(--green-light);background:#f0f7f3;}
+.file-drop input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+.file-drop .icon{font-size:2rem;margin-bottom:8px;}
+.file-drop p{color:var(--muted);font-size:0.88rem;}
+.file-drop strong{color:var(--green-mid);}
+.msg{padding:12px 18px;border-radius:9px;font-size:0.88rem;margin-top:12px;display:none;}
+.msg.success{background:#f0fdf4;color:#166534;border:1px solid #86efac;display:block;}
+.msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;display:block;}
+.table-wrap{background:var(--card-bg);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.2);overflow:hidden;}
+.table-header{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--cream-dark);}
+.table-header h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--green);}
+.search-box{border:1.5px solid var(--cream-dark);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:0.88rem;width:220px;outline:none;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:#f8f6f1;padding:12px 16px;text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap;}
+thead th:hover{color:var(--green);}
+tbody tr{border-bottom:1px solid rgba(0,0,0,0.05);}
+tbody tr:hover{background:#f5f8f5;}
+tbody td{padding:11px 16px;font-size:0.88rem;}
+.rank-badge{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:600;}
+.rank-1{background:var(--gold);color:#0d2018;}.rank-2{background:#c0c0c0;color:#222;}.rank-3{background:#cd7f32;color:white;}.rank-n{background:var(--cream-dark);color:var(--muted);}
+.score-pos{color:#166534;font-family:'DM Mono',monospace;font-weight:500;}
+.score-neg{color:var(--red);font-family:'DM Mono',monospace;font-weight:500;}
+.score-zero{color:var(--muted);font-family:'DM Mono',monospace;}
+.joker-badge{background:rgba(201,168,76,0.15);color:#7a5c10;border:1px solid rgba(201,168,76,0.4);border-radius:5px;padding:2px 8px;font-size:0.75rem;font-family:'DM Mono',monospace;}
+.joker-legend{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+.joker-legend span{font-size:0.8rem;color:var(--muted);}
+.history-item{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,0.06);flex-wrap:wrap;gap:8px;}
+.history-date{font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--green-mid);font-weight:500;}
+.history-meta{font-size:0.82rem;color:var(--muted);}
+.month-tag{background:var(--green-mid);color:white;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:500;}
+.pagination{display:flex;align-items:center;gap:8px;padding:16px 20px;border-top:1px solid var(--cream-dark);justify-content:flex-end;}
+.page-btn{border:1.5px solid var(--cream-dark);background:white;border-radius:7px;padding:6px 12px;font-size:0.82rem;cursor:pointer;font-family:'DM Mono',monospace;color:var(--text);}
+.page-btn:hover:not(:disabled){border-color:var(--green-light);}
+.page-btn.active{background:var(--green-mid);color:white;border-color:var(--green-mid);}
+.page-btn:disabled{opacity:0.35;cursor:default;}
+.page-info{font-size:0.8rem;color:var(--muted);}
+.month-cols th,.month-cols td{font-size:0.78rem;padding:8px 10px;}
+@media(max-width:600px){header{padding:16px;}.title-block h1{font-size:1.4rem;}.main{padding:20px 12px;}.search-box{width:100%;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="suits">&#9824;&#9829;&#9830;&#9827;</div>
+    <div class="title-block">
+      <h1>Trio Quotidien</h1>
+      <p>Gestion des classements Funbridge</p>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-chip"><span class="val" id="stat-joueurs">--</span><span class="lbl">Joueurs</span></div>
+    <div class="stat-chip"><span class="val" id="stat-jours">--</span><span class="lbl">Journees</span></div>
+    <div class="stat-chip"><span class="val" id="stat-mois">--</span><span class="lbl">Mois actif</span></div>
+  </div>
+</header>
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" id="tab-btn-import" onclick="showTab('import')">Importer</button>
+    <button class="tab" id="tab-btn-mensuel" onclick="showTab('mensuel')">Mensuel</button>
+    <button class="tab" id="tab-btn-annuel" onclick="showTab('annuel')">Annuel</button>
+    <button class="tab" id="tab-btn-historique" onclick="showTab('historique')">Historique</button>
+  </div>
 
+  <div id="tab-import" class="panel active">
+    <div class="import-section">
+      <h2>Importer les resultats</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">La date est detectee automatiquement depuis le nom du fichier.<br>Vous pouvez selectionner <strong>plusieurs fichiers</strong> en une seule fois.</p>
+      <div class="file-drop" id="file-drop">
+        <input type="file" accept=".csv" id="file-input" multiple onchange="handleFiles(this)">
+        <div class="icon">&#128194;</div>
+        <p><strong>Cliquez ou glissez</strong> un ou plusieurs fichiers CSV Funbridge</p>
+        <p style="margin-top:4px;font-size:0.78rem;">Nom attendu : Funbridge-...-AAAA-MM-JJ.csv</p>
+      </div>
+      <div id="import-summary" style="display:none;margin-top:16px;">
+        <div style="font-size:0.85rem;font-weight:600;color:var(--green);margin-bottom:8px;" id="import-summary-title"></div>
+        <div id="import-summary-lines" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div id="import-msg"></div>
+    </div>
+    <div class="import-section">
+      <h2>Gestion des donnees</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-gold" onclick="exportData()">Exporter sauvegarde</button>
+        <label class="btn btn-primary" style="cursor:pointer;display:inline-block;">
+          Charger sauvegarde
+          <input type="file" accept=".json" style="display:none" onchange="importData(this)">
+        </label>
+        <button class="btn btn-gold" onclick="showExportShare()">Exporter pour partage</button>
+        <button class="btn btn-danger" onclick="resetAll()">Tout effacer</button>
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:10px;">Pensez a exporter regulierement une sauvegarde de vos donnees.</p>
+    </div>
+  </div>
+
+  <div id="tab-mensuel" class="panel">
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.6);">Mois</label>
+        <select id="filter-month" onchange="renderMensuel()" style="background:rgba(255,255,255,0.95);border:1.5px solid var(--cream-dark);border-radius:8px;padding:9px 14px;">
+          <option value="1">Janvier</option><option value="2">Fevrier</option><option value="3">Mars</option><option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Aout</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Decembre</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.6);">Annee</label>
+        <select id="filter-year-m" onchange="renderMensuel()" style="background:rgba(255,255,255,0.95);border:1.5px solid var(--cream-dark);border-radius:8px;padding:9px 14px;"></select>
+      </div>
+    </div>
+    <div class="joker-legend">
+      <span>Jokers :</span>
+      <span>0-7 jours : aucun</span><span>8-15 jours : -1 pire score</span>
+      <span>16-23 jours : -2 pires scores</span><span>24+ jours : -3 pires scores</span>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <h2 id="mensuel-title">Classement mensuel</h2>
+        <input class="search-box" type="text" placeholder="Rechercher un joueur..." oninput="filterTable('mensuel',this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th onclick="sortTable('mensuel','rank')">Rang</th>
+            <th onclick="sortTable('mensuel','nickname')">Pseudo</th>
+            <th onclick="sortTable('mensuel','jours')">Jours</th>
+            <th onclick="sortTable('mensuel','scoreBrut')">Score brut</th>
+            <th onclick="sortTable('mensuel','jokers')">Jokers</th>
+            <th onclick="sortTable('mensuel','scoreNet')">Score net</th>
+          </tr></thead>
+          <tbody id="tbody-mensuel"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination-mensuel"></div>
+    </div>
+  </div>
+
+  <div id="tab-annuel" class="panel">
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.6);">Annee</label>
+        <select id="filter-year-a" onchange="renderAnnuel()" style="background:rgba(255,255,255,0.95);border:1.5px solid var(--cream-dark);border-radius:8px;padding:9px 14px;"></select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <h2 id="annuel-title">Classement annuel</h2>
+        <input class="search-box" type="text" placeholder="Rechercher un joueur..." oninput="filterTable('annuel',this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="month-cols"><thead id="thead-annuel"></thead><tbody id="tbody-annuel"></tbody></table>
+      </div>
+      <div class="pagination" id="pagination-annuel"></div>
+    </div>
+  </div>
+
+  <div id="tab-historique" class="panel">
+    <div class="table-wrap">
+      <div class="table-header"><h2>Journees importees</h2></div>
+      <div id="history-body"></div>
+    </div>
+  </div>
+</div>
+<script src="data.js"></script>
+<script>
+var db;
+
+function loadDB() {
+  try {
+    if (typeof BRIDGE_DATA === 'undefined') {
+      console.error('BRIDGE_DATA non charge');
+      return {days: {}};
+    }
+    var days = {};
+    Object.keys(BRIDGE_DATA).forEach(function(date) {
+      var d = BRIDGE_DATA[date];
+      days[date] = {
+        date: date, month: d.m, year: d.y,
+        results: d.r.map(function(r) { return {nickname:r[0], score:r[1]}; })
+      };
+    });
+    console.log('Donnees chargees: ' + Object.keys(days).length + ' journees');
+    return {days: days};
+  } catch(e) {
+    console.error('Erreur loadDB:', e);
+    return {days: {}};
+  }
+}
+
+function saveDB() {
+  try { localStorage.setItem('bridge_trio_v2', JSON.stringify(db)); } catch(e) {}
+  updateStats();
+}
+
+var MONTHS_FR = ['','Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+var MONTHS_S = ['','Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec'];
+var PAGE_SIZE = 60;
+var mensuelData=[], mensuelFiltered=[], mensuelPage=1, mensuelSort={col:'rank',asc:true};
+var annuelData=[], annuelFiltered=[], annuelPage=1, annuelMonths=[], annuelSort={col:'rank',asc:true};
+
+window.onload = function() {
+  db = loadDB();
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth() + 1;
+  for (var yr = y-3; yr <= y+1; yr++) {
+    ['filter-year-m','filter-year-a'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      var opt = document.createElement('option');
+      opt.value = yr; opt.textContent = yr;
+      if (yr === y) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  document.getElementById('filter-month').value = m;
+  updateStats(); renderMensuel(); renderAnnuel(); renderHistorique();
+  var drop = document.getElementById('file-drop');
+  drop.addEventListener('dragover', function(e) { e.preventDefault(); });
+  drop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) handleFiles({files: e.dataTransfer.files});
+  });
+};
+
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('tab-btn-'+name).classList.add('active');
+  if (name==='mensuel') renderMensuel();
+  if (name==='annuel') renderAnnuel();
+  if (name==='historique') renderHistorique();
+}
+
+function extractDate(filename) {
+  var m = filename.match(/(\d{4})-(\d{2})-(\d{2})\.csv$/i);
+  if (!m) return null;
+  return {dateVal: m[1]+'-'+m[2]+'-'+m[3], year: parseInt(m[1]), month: parseInt(m[2])};
+}
+
+function handleFiles(input) {
+  if (!input.files || input.files.length===0) return;
+  var files = Array.from(input.files).sort(function(a,b){return a.name.localeCompare(b.name);});
+  processQueue(files, 0, {ok:[], warn:[], err:[]});
+}
+
+function processQueue(files, idx, summary) {
+  if (idx >= files.length) {
+    showSummary(summary, files.length);
+    renderHistorique(); updateStats(); renderMensuel(); renderAnnuel();
+    return;
+  }
+  var file = files[idx];
+  var info = extractDate(file.name);
+  if (!info) { summary.err.push({name:file.name, msg:'Date non detectee'}); processQueue(files,idx+1,summary); return; }
+  if (db.days[info.dateVal]) { summary.warn.push({name:file.name, date:info.dateVal, msg:'Deja importe - ignore'}); processQueue(files,idx+1,summary); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var res = parseCSV(e.target.result, info);
+    if (res.error) summary.err.push({name:file.name, msg:res.error});
+    else summary.ok.push({name:file.name, date:info.dateVal, count:res.count});
+    processQueue(files, idx+1, summary);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(text, info) {
+  var lines = text.split('\n');
+  var results = [];
+  for (var i=0; i<lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line || /^RANK/i.test(line)) continue;
+    var parts = line.split(';');
+    if (parts.length < 3) continue;
+    var nick = parts[1] ? parts[1].trim() : '';
+    var score = parseFloat(parts[2]);
+    if (!nick || isNaN(score)) continue;
+    results.push({nickname:nick, score:score});
+  }
+  if (results.length===0) return {error:'Aucun resultat valide'};
+  db.days[info.dateVal] = {date:info.dateVal, month:info.month, year:info.year, results:results};
+  saveDB();
+  return {count:results.length};
+}
+
+function showSummary(summary, total) {
+  var container = document.getElementById('import-summary');
+  var titleEl = document.getElementById('import-summary-title');
+  var lines = document.getElementById('import-summary-lines');
+  container.style.display = 'block';
+  titleEl.textContent = total+' fichier(s) - '+summary.ok.length+' importe(s), '+summary.warn.length+' ignore(s), '+summary.err.length+' erreur(s)';
+  var html = '';
+  summary.ok.forEach(function(f) { html += '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:8px 12px;font-size:0.82rem;color:#166534;">OK '+formatDate(f.date)+' - '+f.count+' joueurs</div>'; });
+  summary.warn.forEach(function(f) { html += '<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:7px;padding:8px 12px;font-size:0.82rem;color:#92400e;">AVERT '+formatDate(f.date)+' - '+f.msg+'</div>'; });
+  summary.err.forEach(function(f) { html += '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:7px;padding:8px 12px;font-size:0.82rem;color:#991b1b;">ERR '+f.msg+'</div>'; });
+  lines.innerHTML = html;
+}
+
+function calcJokers(n) {
+  if (n >= 24) return 3;
+  if (n >= 16) return 2;
+  if (n >= 8) return 1;
+  return 0;
+}
+
+function getMonthData(month, year) {
+  var players = {};
+  Object.values(db.days).forEach(function(day) {
+    if (day.month!==month || day.year!==year) return;
+    // Supporte format normal ET format compact [nickname, score]
+    var results = day.results || [];
+    results.forEach(function(r) {
+      var nick = Array.isArray(r) ? r[0] : r.nickname;
+      var score = Array.isArray(r) ? r[1] : r.score;
+      var key = nick.toLowerCase().trim();
+      if (!players[key]) players[key] = {nickname:nick, scores:[]};
+      players[key].scores.push(score);
+    });
+  });
+  return Object.values(players).map(function(p) {
+    var jours = p.scores.length;
+    var nj = calcJokers(jours);
+    var sorted = p.scores.slice().sort(function(a,b){return a-b;});
+    var slots = [nj>=1?Math.round(sorted[0]*10)/10:0, nj>=2?Math.round(sorted[1]*10)/10:0, nj>=3?Math.round(sorted[2]*10)/10:0];
+    var brut = p.scores.reduce(function(a,b){return a+b;},0);
+    var jval = sorted.slice(0,nj).reduce(function(a,b){return a+b;},0);
+    var net = brut - jval;
+    return {nickname:p.nickname, jours:jours, scoreBrut:Math.round(brut*10)/10, jokers:nj, jokerSlots:slots, jokerVal:Math.round(jval*10)/10, scoreNet:Math.round(net*10)/10};
+  }).sort(function(a,b){return b.scoreNet-a.scoreNet;}).map(function(p,i){return Object.assign({},p,{rank:i+1});});
+}
+
+function getAnnualData(year) {
+  var months = [];
+  var seen = {};
+  Object.values(db.days).forEach(function(d) {
+    if (d.year===year && !seen[d.month]) { seen[d.month]=true; months.push(d.month); }
+  });
+  months.sort(function(a,b){return a-b;});
+  var players = {};
+  months.forEach(function(m) {
+    getMonthData(m, year).forEach(function(p) {
+      if (!players[p.nickname]) players[p.nickname] = {nickname:p.nickname, months:{}, total:0, joursTotal:0};
+      players[p.nickname].months[m] = p.scoreNet;
+      players[p.nickname].total += p.scoreNet;
+      players[p.nickname].joursTotal += p.jours;
+    });
+  });
+  var list = Object.values(players).sort(function(a,b){
+    if (b.total!==a.total) return b.total-a.total;
+    return a.nickname.localeCompare(b.nickname);
+  }).map(function(p,i){return Object.assign({},p,{rank:i+1});});
+  return {months:months, players:list};
+}
+
+function renderMensuel() {
+  var month = parseInt(document.getElementById('filter-month').value);
+  var year = parseInt(document.getElementById('filter-year-m').value);
+  if (!year) return;
+  mensuelData = getMonthData(month, year);
+  mensuelFiltered = mensuelData.slice();
+  document.getElementById('mensuel-title').textContent = 'Classement - '+MONTHS_FR[month]+' '+year;
+  mensuelPage = 1;
+  renderMensuelTable();
+}
+
+function filterTable(which, q) {
+  var ql = q.toLowerCase();
+  if (which==='mensuel') {
+    mensuelFiltered = mensuelData.filter(function(r){return r.nickname.toLowerCase().indexOf(ql)>=0;});
+    mensuelPage=1; renderMensuelTable();
+  } else {
+    annuelFiltered = annuelData.filter(function(r){return r.nickname.toLowerCase().indexOf(ql)>=0;});
+    annuelPage=1; renderAnnuelTable();
+  }
+}
+
+function sortTable(which, col) {
+  if (mensuelSort.col===col) mensuelSort.asc=!mensuelSort.asc;
+  else { mensuelSort.col=col; mensuelSort.asc=(col==='nickname'); }
+  var asc = mensuelSort.asc;
+  mensuelFiltered.sort(function(a,b){
+    var va=a[col], vb=b[col];
+    if (typeof va==='string') return asc?va.localeCompare(vb):vb.localeCompare(va);
+    return asc?va-vb:vb-va;
+  });
+  renderMensuelTable();
+}
+
+function sortAnnuel(col) {
+  if (annuelSort.col===col) annuelSort.asc=!annuelSort.asc;
+  else { annuelSort.col=col; annuelSort.asc=(col==='nickname'); }
+  var asc = annuelSort.asc;
+  annuelFiltered.sort(function(a,b){
+    if (col.indexOf('month_')===0) {
+      var m=parseInt(col.split('_')[1]);
+      var va=a.months[m]!==undefined?a.months[m]:-9999;
+      var vb=b.months[m]!==undefined?b.months[m]:-9999;
+      return asc?va-vb:vb-va;
+    }
+    var va=a[col], vb=b[col];
+    if (typeof va==='string') return asc?va.localeCompare(vb):vb.localeCompare(va);
+    return asc?va-vb:vb-va;
+  });
+  annuelPage=1; renderAnnuelTable();
+}
+
+function scoreHTML(v) {
+  if (v>0) return '<span class="score-pos">+'+v+'</span>';
+  if (v<0) return '<span class="score-neg">'+v+'</span>';
+  return '<span class="score-zero">0</span>';
+}
+
+function renderMensuelTable() {
+  var tbody = document.getElementById('tbody-mensuel');
+  var total = mensuelFiltered.length;
+  var pages = Math.ceil(total/PAGE_SIZE);
+  if (mensuelPage>pages && pages>0) mensuelPage=pages;
+  var start = (mensuelPage-1)*PAGE_SIZE;
+  var page = mensuelFiltered.slice(start, start+PAGE_SIZE);
+  if (total===0) {
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);">Aucune donnee pour cette periode.</td></tr>';
+    document.getElementById('pagination-mensuel').innerHTML=''; return;
+  }
+  tbody.innerHTML = page.map(function(r) {
+    var cls = r.rank===1?'rank-1':r.rank===2?'rank-2':r.rank===3?'rank-3':'rank-n';
+    var jokerTxt = r.jokers>0 ? '<span class="joker-badge">['+r.jokerSlots[0]+' '+r.jokerSlots[1]+' '+r.jokerSlots[2]+']</span>' : '<span style="color:var(--muted);">-</span>';
+    return '<tr><td><span class="rank-badge '+cls+'">'+r.rank+'</span></td><td><strong>'+esc(r.nickname)+'</strong></td><td><span style="background:rgba(45,90,61,0.1);color:var(--green-mid);border-radius:5px;padding:2px 8px;font-size:0.75rem;">'+r.jours+'j</span></td><td>'+scoreHTML(r.scoreBrut)+'</td><td>'+jokerTxt+'</td><td>'+scoreHTML(r.scoreNet)+'</td></tr>';
+  }).join('');
+  renderPagination('mensuel', total);
+}
+
+function renderAnnuel() {
+  var year = parseInt(document.getElementById('filter-year-a').value);
+  if (!year) return;
+  var res = getAnnualData(year);
+  annuelMonths = res.months;
+  annuelData = res.players;
+  annuelFiltered = annuelData.slice();
+  document.getElementById('annuel-title').textContent = 'Classement annuel '+year;
+  var thead = document.getElementById('thead-annuel');
+  var h = '<tr><th onclick="sortAnnuel(\'rank\')">Rang</th><th onclick="sortAnnuel(\'nickname\')">Pseudo</th>';
+  annuelMonths.forEach(function(m) { h += '<th onclick="sortAnnuel(\'month_'+m+'\')">'+MONTHS_S[m]+'</th>'; });
+  h += '<th onclick="sortAnnuel(\'joursTotal\')">Jours</th><th onclick="sortAnnuel(\'total\')">Total</th></tr>';
+  thead.innerHTML = h;
+  annuelPage=1; renderAnnuelTable();
+}
+
+function renderAnnuelTable() {
+  var tbody = document.getElementById('tbody-annuel');
+  var total = annuelFiltered.length;
+  var pages = Math.ceil(total/PAGE_SIZE);
+  if (annuelPage>pages && pages>0) annuelPage=pages;
+  var start = (annuelPage-1)*PAGE_SIZE;
+  var page = annuelFiltered.slice(start, start+PAGE_SIZE);
+  if (total===0) {
+    tbody.innerHTML='<tr><td colspan="20" style="text-align:center;padding:40px;color:var(--muted);">Aucune donnee.</td></tr>';
+    document.getElementById('pagination-annuel').innerHTML=''; return;
+  }
+  tbody.innerHTML = page.map(function(r) {
+    var cls = r.rank===1?'rank-1':r.rank===2?'rank-2':r.rank===3?'rank-3':'rank-n';
+    var row = '<tr><td><span class="rank-badge '+cls+'">'+r.rank+'</span></td><td><strong>'+esc(r.nickname)+'</strong></td>';
+    annuelMonths.forEach(function(m) {
+      var v = r.months[m];
+      row += v!==undefined ? '<td>'+scoreHTML(v)+'</td>' : '<td style="color:var(--muted)">-</td>';
+    });
+    var tot = Math.round(r.total*10)/10;
+    row += '<td><span style="background:rgba(45,90,61,0.1);color:var(--green-mid);border-radius:5px;padding:2px 8px;font-size:0.75rem;">'+r.joursTotal+'j</span></td>';
+    row += '<td>'+scoreHTML(tot)+'</td></tr>';
+    return row;
+  }).join('');
+  renderPagination('annuel', total);
+}
+
+function renderPagination(which, total) {
+  var pages = Math.ceil(total/PAGE_SIZE);
+  var cur = which==='mensuel'?mensuelPage:annuelPage;
+  var el = document.getElementById('pagination-'+which);
+  var html = '<span class="page-info">'+total+' joueurs';
+  if (pages>1) html += ' - page '+cur+'/'+pages;
+  html += '</span>';
+  if (pages>1) {
+    html += '<button class="page-btn" onclick="goPage(\''+which+'\','+(cur-1)+')" '+(cur===1?'disabled':'')+'>Prec</button>';
+    for (var p=1; p<=pages; p++) {
+      if (p===1||p===pages||Math.abs(p-cur)<=2) {
+        html += '<button class="page-btn '+(p===cur?'active':'')+'" onclick="goPage(\''+which+'\','+p+')">'+p+'</button>';
+      }
+    }
+    html += '<button class="page-btn" onclick="goPage(\''+which+'\','+(cur+1)+')" '+(cur>=pages?'disabled':'')+'>Suiv</button>';
+  }
+  el.innerHTML = html;
+}
+
+function goPage(which, p) {
+  if (which==='mensuel') { mensuelPage=p; renderMensuelTable(); }
+  else { annuelPage=p; renderAnnuelTable(); }
+}
+
+function renderHistorique() {
+  var body = document.getElementById('history-body');
+  var days = Object.values(db.days).sort(function(a,b){return b.date.localeCompare(a.date);});
+  // Normaliser format compact vers format normal pour l'affichage
+  days = days.map(function(d) {
+    var results = d.results || d.r || [];
+    var count = results.length;
+    return {date:d.date, month:d.month||d.m, year:d.year||d.y, results:results, _count:count};
+  });
+  if (days.length===0) { body.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);">Aucune journee importee.</div>'; return; }
+  body.innerHTML = days.map(function(d) {
+    return '<div class="history-item"><div><span class="history-date">'+formatDate(d.date)+'</span><span class="history-meta"> - '+d.results.length+' joueurs</span></div><div style="display:flex;gap:8px;align-items:center;"><span class="month-tag">'+MONTHS_FR[d.month]+' '+d.year+'</span><button class="btn btn-danger" style="padding:5px 10px;font-size:0.78rem;" onclick="deleteDay(\''+d.date+'\')">X</button></div></div>';
+  }).join('');
+}
+
+function deleteDay(dateKey) {
+  if (!confirm('Supprimer la journee du '+formatDate(dateKey)+' ?')) return;
+  delete db.days[dateKey]; saveDB(); renderHistorique(); renderMensuel(); renderAnnuel();
+}
+
+function updateStats() {
+  var days = Object.values(db.days);
+  var nicks = {};
+  days.forEach(function(d) { d.results.forEach(function(r) { nicks[r.nickname]=true; }); });
+  document.getElementById('stat-joueurs').textContent = Object.keys(nicks).length||'--';
+  document.getElementById('stat-jours').textContent = days.length||'--';
+  if (days.length>0) {
+    var last = days.slice().sort(function(a,b){return b.date.localeCompare(a.date);})[0];
+    document.getElementById('stat-mois').textContent = MONTHS_S[last.month]+' '+last.year;
+  } else { document.getElementById('stat-mois').textContent='--'; }
+}
+
+function exportData() {
+  var jsonStr = JSON.stringify(db, null, 2);
+  var fname = 'bridge-trio-sauvegarde-'+new Date().toISOString().split('T')[0]+'.json';
+  var blob = new Blob([jsonStr], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);}, 1000);
+}
+
+function importData(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var raw = e.target.result.trim();
+      var data = JSON.parse(raw);
+      if (!data.days) throw new Error('Format invalide');
+      var n = Object.keys(data.days).length;
+      if (!confirm('Charger '+n+' journees ? Les donnees actuelles seront remplacees.')) return;
+      db = data;
+      localStorage.setItem('bridge_trio_v2', JSON.stringify(db));
+      updateStats(); renderMensuel(); renderAnnuel(); renderHistorique();
+      showTab('mensuel');
+      alert('OK - '+n+' journees chargees !');
+    } catch(err) { alert('Erreur : '+err.message); }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function showExportShare() {
+  if (!confirm('Generer un fichier de consultation avec toutes vos donnees ?')) return;
+  try {
+    var dbStr = JSON.stringify(db);
+    var shareHtml = document.documentElement.outerHTML;
+    shareHtml = shareHtml.replace('var INITIAL_DATA = ##DB_PLACEHOLDER##;', 'var INITIAL_DATA = ' + dbStr + ';');
+    shareHtml = shareHtml.replace('onclick="checkCode()">Importer</button>', 'style="display:none">Importer</button>');
+    shareHtml = shareHtml.replace('id="tab-btn-historique" onclick="showTab('historique')">Historique</button>', 'id="tab-btn-historique" style="display:none">Historique</button>');
+    shareHtml = shareHtml.replace('class="tab" id="tab-btn-mensuel"', 'class="tab active" id="tab-btn-mensuel"');
+    shareHtml = shareHtml.replace('id="tab-import" class="panel active"', 'id="tab-import" class="panel" style="display:none"');
+    shareHtml = shareHtml.replace('id="tab-mensuel" class="panel"', 'id="tab-mensuel" class="panel active"');
+    shareHtml = shareHtml.replace('</header>', '</header><div style="background:#c9a84c;color:#0d2018;text-align:center;padding:8px;font-size:0.85rem;font-weight:700;">MODE CONSULTATION - Trio Quotidien Funbridge</div>');
+    var fname = 'TrioQuotidien-Partage-' + new Date().toISOString().split('T')[0] + '.html';
+    var blob = new Blob([shareHtml], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(a.href);}, 2000);
+  } catch(err) { alert('Erreur export : ' + err.message); }
+}
+
+function resetAll() {
+  if (!confirm('Effacer TOUTES les donnees ?')) return;
+  db = {days:{}}; localStorage.removeItem('bridge_trio_v2'); saveDB(); location.reload();
+}
+
+function showMsg(id, type, text) {
+  var el = document.getElementById(id);
+  el.className = 'msg '+type; el.textContent = text;
+  setTimeout(function(){ el.className='msg'; }, 6000);
+}
+
+function formatDate(d) {
+  var parts = d.split('-'); return parts[2]+'/'+parts[1]+'/'+parts[0];
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
