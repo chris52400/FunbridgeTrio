@@ -191,7 +191,6 @@ tbody td{padding:11px 16px;font-size:0.88rem;}
     </div>
   </div>
 </div>
-<script src="data.js"></script>
 <script>
 var db;
 
@@ -228,7 +227,7 @@ var PAGE_SIZE = 60;
 var mensuelData=[], mensuelFiltered=[], mensuelPage=1, mensuelSort={col:'rank',asc:true};
 var annuelData=[], annuelFiltered=[], annuelPage=1, annuelMonths=[], annuelSort={col:'rank',asc:true};
 
-window.onload = function() {
+function init() {
   db = loadDB();
   var now = new Date();
   var y = now.getFullYear();
@@ -631,5 +630,6 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
+<script src="data.js"></script>
 </body>
 </html>
